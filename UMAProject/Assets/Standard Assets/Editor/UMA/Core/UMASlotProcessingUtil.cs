@@ -94,6 +94,11 @@ namespace UMAEditor
 			slot.slotName = assetName;
 			slot.material = material;
 			slot.UpdateMeshData(finalMeshRenderer);
+			var cloth = mesh.GetComponent<Cloth>();
+			if (cloth != null)
+			{
+				slot.meshData.RetrieveDataFromUnityCloth(cloth);
+			}
 			AssetDatabase.CreateAsset(slot, slotFolder + '/' + assetName + '/' + assetName + "_Slot.asset");
 			for(int i = 1; i < slot.meshData.subMeshCount; i++)
 			{

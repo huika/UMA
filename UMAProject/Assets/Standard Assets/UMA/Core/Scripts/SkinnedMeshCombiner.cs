@@ -29,7 +29,8 @@ namespace UMA
 			has_uv = 8,
 			has_uv2 = 16,
 			has_uv3 = 32,
-			has_uv4 = 64
+			has_uv4 = 64,
+			has_clothSkinning = 128,
 		}
 
 		static Dictionary<int, BoneIndexEntry> bonesCollection;
@@ -65,6 +66,7 @@ namespace UMA
 			bool has_uv3 = (meshComponents & MeshComponents.has_uv3) != MeshComponents.none;
 			bool has_uv4 = (meshComponents & MeshComponents.has_uv4) != MeshComponents.none;
 			bool has_colors32 = (meshComponents & MeshComponents.has_colors32) != MeshComponents.none;
+			bool has_clothSkinning = (meshComponents & MeshComponents.has_clothSkinning) != MeshComponents.none;
 
 			Vector3[] vertices = EnsureArrayLength(target.vertices, vertexCount);
 			BoneWeight[] boneWeights = EnsureArrayLength(target.unityBoneWeights, vertexCount);
@@ -75,6 +77,9 @@ namespace UMA
 			Vector2[] uv3 = has_uv3 ? EnsureArrayLength(target.uv3, vertexCount) : null;
 			Vector2[] uv4 = has_uv4 ? EnsureArrayLength(target.uv4, vertexCount) : null;
 			Color32[] colors32 = has_colors32 ? EnsureArrayLength(target.colors32, vertexCount) : null;
+			ClothSkinningCoefficient[] clothSkinning = has_clothSkinning ? EnsureArrayLength(target.clothSkinning, vertexCount) : null;
+			Dictionary<Vector3, int> clothVertices = has_clothSkinning ? new Dictionary<Vector3, int>(vertexCount) : null;
+			Dictionary<Vector3, int> localClothVertices = has_clothSkinning ? new Dictionary<Vector3, int>(vertexCount) : null;
 
 			UMATransform[] umaTransforms = EnsureArrayLength(target.umaBones, transformHierarchyCount);
 
@@ -185,6 +190,47 @@ namespace UMA
 					}
 				}
 
+				if (has_clothSkinning)
+				{
+					localClothVertices.Clear();
+					if (source.meshData.clothSkinningSerialized != null && source.meshData.clothSkinningSerialized.Length > 0)
+					{
+						int knownIndices = clothVertices.Count;
+						for (int i = 0; i < source.meshData.vertexCount; i++)
+						{
+							var vertice = source.meshData.vertices[i];
+							if (!localClothVertices.ContainsKey(vertice))
+							{
+								int localCount = localClothVertices.Count;
+								localClothVertices.Add(vertice, localCount);
+								if (!clothVertices.ContainsKey(vertice))
+								{
+									ConvertData(ref source.meshData.clothSkinningSerialized[localCount], ref clothSkinning[clothVertices.Count]);
+									clothVertices.Add(vertice, clothVertices.Count);
+								}
+								else
+								{
+									ConvertData(ref source.meshData.clothSkinningSerialized[localCount], ref clothSkinning[clothVertices[vertice]]);
+								}
+							}
+						}
+					}
+					else
+					{
+						for (int i = 0; i < source.meshData.vertexCount; i++)
+						{
+							var vertice = source.meshData.vertices[i];
+							if (!clothVertices.ContainsKey(vertice))
+							{
+								clothSkinning[clothVertices.Count].maxDistance = 0;
+								clothSkinning[clothVertices.Count].collisionSphereDistance = float.MaxValue;
+								clothVertices.Add(vertice, clothVertices.Count);
+								localClothVertices.Add(vertice, clothVertices.Count);
+							}
+						}
+					}
+				}
+
 				for (int i = 0; i < source.meshData.subMeshCount; i++)
 				{
 					if (source.targetSubmeshIndices[i] >= 0)
@@ -215,6 +261,12 @@ namespace UMA
 			target.uv4 = uv4;
 			target.colors32 = colors32;
 
+			if (has_clothSkinning)
+			{
+				Array.Resize(ref clothSkinning, clothVertices.Count);
+			}
+			target.clothSkinning = clothSkinning;
+
 			target.subMeshCount = subMeshCount;
 			target.submeshes = new SubMeshTriangles[subMeshCount];
 			target.umaBones = umaTransforms;
@@ -224,6 +276,18 @@ namespace UMA
 				target.submeshes[i].triangles = submeshTriangles[i];
 			}
 			target.boneNameHashes = bonesList.ToArray();
+		}
+
+		public static void ConvertData(ref Vector2 source, ref ClothSkinningCoefficient dest)
+		{
+			dest.collisionSphereDistance = source.x;
+			dest.maxDistance = source.y;
+		}
+
+		public static void ConvertData(ref ClothSkinningCoefficient source, ref Vector2 dest)
+		{
+			dest.x = source.collisionSphereDistance;
+			dest.y = source.maxDistance;
 		}
 
 		private static void MergeSortedTransforms(UMATransform[] mergedTransforms, ref int len1, UMATransform[] umaTransforms)
@@ -306,6 +370,7 @@ namespace UMA
 				if (source.meshData.uv3 != null && source.meshData.uv3.Length != 0) meshComponents |= MeshComponents.has_uv3;
 				if (source.meshData.uv4 != null && source.meshData.uv4.Length != 0) meshComponents |= MeshComponents.has_uv4;
 				if (source.meshData.colors32 != null && source.meshData.colors32.Length != 0) meshComponents |= MeshComponents.has_colors32;
+				if (source.meshData.clothSkinningSerialized != null && source.meshData.clothSkinningSerialized.Length != 0) meshComponents |= MeshComponents.has_clothSkinning;
 
 				for (int i = 0; i < source.meshData.subMeshCount; i++)
 				{

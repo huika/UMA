@@ -15,6 +15,7 @@ namespace UMA
 
         UMAData umaData;
         int atlasResolution;
+		private UMAClothProperties clothProperties;
 
 		protected void EnsureUMADataSetup(UMAData umaData)
 		{
@@ -64,6 +65,7 @@ namespace UMA
         {
             this.umaData = umaData;
             this.atlasResolution = atlasResolution;
+			this.clothProperties = null;
 
             combinedMeshList = new List<SkinnedMeshCombiner.CombineInstance>(umaData.umaRecipe.slotDataList.Length);
             combinedMaterialList = new List<Material>();
@@ -84,6 +86,14 @@ namespace UMA
             }
 
 			umaMesh.ApplyDataToUnityMesh(umaData.myRenderer, umaData.skeleton);
+			if (clothProperties != null)
+			{
+				var cloth = umaData.myRenderer.GetComponent<Cloth>();
+				if (cloth != null)
+				{
+					clothProperties.ApplyValues(cloth);
+				}
+			}
 			umaMesh.ReleaseSharedBuffers();
 
             umaData.umaRecipe.ClearDNAConverters();
@@ -166,7 +176,13 @@ namespace UMA
 					{
 						slotData.asset.SlotAtlassed.Invoke(umaData, slotData, generatedMaterial.material, materialDefinition.atlasRegion);
 					}
-                }
+
+					if (slotData.asset.material.clothProperties != null)
+					{
+						clothProperties = slotData.asset.material.clothProperties;
+					}
+
+				}
             }
         }
 

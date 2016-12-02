@@ -226,6 +226,9 @@ namespace UMA
 		public Vector2[] uv2;
 		public Vector2[] uv3;
 		public Vector2[] uv4;
+		public ClothSkinningCoefficient[] clothSkinning;
+		public Vector2[] clothSkinningSerialized;
+
 		public SubMeshTriangles[] submeshes;
 		[NonSerialized]
 		public Transform[] bones;
@@ -268,6 +271,7 @@ namespace UMA
 				uv4 = gUV4;
 				colors32 = gColors32;
 				boneHierarchy = gUMABones;
+				clothSkinning = gClothSkinning;
 				return true;
 			}
 
@@ -294,6 +298,8 @@ namespace UMA
 				uv3 = null;
 				uv4 = null;
 				colors32 = null;
+				boneHierarchy = null;
+				clothSkinning = null;
 				bufferLockOwner = null;
 			}
 #endif
@@ -311,6 +317,8 @@ namespace UMA
 			uv2 = new Vector2[size];
 			uv3 = new Vector2[size];
 			uv4 = new Vector2[size];
+			clothSkinning = new ClothSkinningCoefficient[size];
+			clothSkinningSerialized = new Vector2[size];
 		}
 		
 		/// <summary>
@@ -324,7 +332,6 @@ namespace UMA
 			UpdateBones(renderer.rootBone, renderer.bones);
 		}
 
-		
 		/// <summary>
 		/// Initialize UMA mesh data from Unity mesh.
 		/// </summary>
@@ -348,6 +355,19 @@ namespace UMA
 			{
 				submeshes[i].triangles = sharedMesh.GetTriangles(i);
 			}
+		}
+
+		/// <summary>
+		/// Initialize UMA mesh cloth data from Unity Cloth
+		/// </summary>
+		/// <param name="cloth"></param>
+		public void RetrieveDataFromUnityCloth(Cloth cloth)
+		{
+			clothSkinning = cloth.coefficients;
+			Debug.Log(clothSkinning.Length);
+			clothSkinningSerialized = new Vector2[clothSkinning.Length];
+			for (int i = 0; i < clothSkinning.Length; i++)
+				SkinnedMeshCombiner.ConvertData(ref clothSkinning[i], ref clothSkinningSerialized[i]);
 		}
 
 		/// <summary>
@@ -473,6 +493,14 @@ namespace UMA
 			renderer.bones = bones != null ? bones : skeleton.HashesToTransforms(boneNameHashes);
 			renderer.sharedMesh = mesh;
 			renderer.rootBone = rootBone;
+
+			if (clothSkinning != null && clothSkinning.Length > 0)
+			{
+				var cloth = renderer.GetComponent<Cloth>();
+				if (cloth == null)
+					cloth = renderer.gameObject.AddComponent<Cloth>();
+				cloth.coefficients = clothSkinning;
+			}
 		}
 
 		/// <summary>
@@ -512,7 +540,7 @@ namespace UMA
 
 		private void CreateTransforms(UMASkeleton skeleton)
 		{
-			for(int i = 0; i < umaBoneCount; i++ )
+			for (int i = 0; i < umaBoneCount; i++)
 			{
 				skeleton.EnsureBone(umaBones[i]);
 			}
@@ -690,6 +718,7 @@ namespace UMA
 		static Vector2[] gUV4 = new Vector2[MAX_VERTEX_COUNT];
 		static Color32[] gColors32 = new Color32[MAX_VERTEX_COUNT];
 		static UMATransform gUMABones = new UMATransform[MAX_VERTEX_COUNT];
+		static UMATransform gClothSkinning  = new ClothSkinningCoefficient[MAX_VERTEX_COUNT];
 #endif
 
 
