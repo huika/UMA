@@ -289,7 +289,7 @@ namespace UMA
 		{
 			if (umaData)
 			{
-				umaData.myRenderer.enabled = true;
+				umaData.Show();
 				umaData.FireUpdatedEvent(false);
 				umaData.FireCharacterCompletedEvents();
 				if (umaData.skeleton.boneCount > 300)

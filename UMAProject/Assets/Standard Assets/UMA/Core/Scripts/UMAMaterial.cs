@@ -13,6 +13,7 @@ namespace UMA
         public MaterialType materialType = MaterialType.Atlas;
         public MaterialChannel[] channels;
 		public UMAClothProperties clothProperties;
+		public bool RequireSeperateRenderer;
 
         public enum MaterialType
         {

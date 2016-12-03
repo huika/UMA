@@ -195,7 +195,6 @@ namespace UMA
 					localClothVertices.Clear();
 					if (source.meshData.clothSkinningSerialized != null && source.meshData.clothSkinningSerialized.Length > 0)
 					{
-						int knownIndices = clothVertices.Count;
 						for (int i = 0; i < source.meshData.vertexCount; i++)
 						{
 							var vertice = source.meshData.vertices[i];
@@ -276,6 +275,42 @@ namespace UMA
 				target.submeshes[i].triangles = submeshTriangles[i];
 			}
 			target.boneNameHashes = bonesList.ToArray();
+		}
+
+		public static UMAMeshData ShallowInstanceMesh(UMAMeshData source)
+		{
+			var target = new UMAMeshData();
+			target.bindPoses = source.bindPoses;
+			target.boneNameHashes = source.boneNameHashes;
+			target.unityBoneWeights = UMABoneWeight.Convert(source.boneWeights);
+			target.colors32 = source.colors32;
+			target.normals = source.normals;
+			target.rootBoneHash = source.rootBoneHash;
+			target.subMeshCount = source.subMeshCount;
+			target.submeshes = source.submeshes;
+			target.tangents = source.tangents;
+			target.umaBoneCount = source.umaBoneCount;
+			target.umaBones = source.umaBones;
+			target.uv = source.uv;
+			target.uv2 = source.uv2;
+			target.uv3 = source.uv3;
+			target.uv4 = source.uv4;
+			target.vertexCount = source.vertexCount;
+			target.vertices = source.vertices;
+
+			if (source.clothSkinningSerialized != null && source.clothSkinningSerialized.Length != 0)
+			{
+				target.clothSkinning = new ClothSkinningCoefficient[source.clothSkinningSerialized.Length];
+				for (int i = 0; i < source.clothSkinningSerialized.Length; i++)
+				{
+					ConvertData(ref source.clothSkinningSerialized[i], ref target.clothSkinning[i]);
+				}
+			}
+			else
+			{
+				target.clothSkinning = null;
+			}
+			return target;
 		}
 
 		public static void ConvertData(ref Vector2 source, ref ClothSkinningCoefficient dest)

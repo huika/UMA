@@ -211,20 +211,14 @@ namespace UMACharacterSystem
 			{
 				if (umaData != null)
 				{
-					if (umaData.myRenderer != null)
-					{
-						umaData.myRenderer.enabled = false;
-					}
+					umaData.Hide();
 				}
 			}
 			else
 			{
 				if (umaData != null)
 				{
-					if (umaData.myRenderer != null)
-					{
-						umaData.myRenderer.enabled = true;
-					}
+					umaData.Show();
 				}
 			}
 			//This hardly ever happens now since the changeRace/LoadFromString/StartStarCoRoutine methods all yield themselves until asset bundles have been downloaded

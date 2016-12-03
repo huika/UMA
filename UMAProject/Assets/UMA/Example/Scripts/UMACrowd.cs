@@ -401,8 +401,7 @@ public class UMACrowd : MonoBehaviour
 		{
 			if (umaData.animator != null)
 				umaData.animator.enabled = false;
-			if (umaData.myRenderer != null)
-				umaData.myRenderer.enabled = false;
+			umaData.Show();
 		}
 	}
 
@@ -593,8 +592,7 @@ public class UMACrowd : MonoBehaviour
 				{
 					if (generatedData.animator != null)
 						generatedData.animator.enabled = true;
-					if (generatedData.myRenderer != null)
-						generatedData.myRenderer.enabled = true;
+					generatedData.Show();
 				}
 			}
 			generateLotsUMA = false;

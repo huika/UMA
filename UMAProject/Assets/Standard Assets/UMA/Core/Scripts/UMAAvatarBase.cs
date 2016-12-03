@@ -144,7 +144,7 @@ public abstract class UMAAvatarBase : MonoBehaviour {
 			umaData.CleanAvatar();
 			Destroy(umaData.umaRoot);
 			umaData.umaRoot = null;
-			umaData.myRenderer = null;
+			umaData.SetRenderers(null);
 			umaData.animator = null;
 			umaData.firstBake = true;
 			umaData.skeleton = null;
