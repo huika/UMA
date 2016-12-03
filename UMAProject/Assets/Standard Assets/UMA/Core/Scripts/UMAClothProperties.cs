@@ -36,6 +36,9 @@ namespace UMA
 			cloth.useVirtualParticles = useVirtualParticles;
 			cloth.worldAccelerationScale = worldAccelerationScale;
 			cloth.worldVelocityScale = worldVelocityScale;
+#if UNITY_EDITOR
+			UnityEditor.EditorUtility.SetDirty(cloth);
+#endif
 		}
 
 		public void ReadValues(Cloth cloth)
