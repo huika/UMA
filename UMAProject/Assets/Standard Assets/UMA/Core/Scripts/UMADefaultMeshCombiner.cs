@@ -113,13 +113,30 @@ namespace UMA
 			EnsureUMADataSetup(umaData);
 			umaData.skeleton.BeginSkeletonUpdate();
 
-			UMAMeshData umaMesh = new UMAMeshData();
-			umaMesh.ClaimSharedBuffers();
+			//UMAMeshData umaMesh = new UMAMeshData();
+			//umaMesh.ClaimSharedBuffers();
 
 			for (currentRendererIndex = 0; currentRendererIndex < umaData.generatedMaterials.rendererCount; currentRendererIndex++)
 			{
+				//Move umaMesh creation to with in the renderer loops, or make sure to set all it's buffers to null, see below.
+				UMAMeshData umaMesh = new UMAMeshData();
+				umaMesh.ClaimSharedBuffers();
+
 				umaMesh.subMeshCount = 0;
 				umaMesh.vertexCount = 0;
+
+				/*umaMesh.vertices = null;//added
+				umaMesh.boneWeights = null;
+				umaMesh.unityBoneWeights = null;
+				umaMesh.normals = null;
+				umaMesh.tangents = null;
+				umaMesh.uv = null;
+				umaMesh.uv2 = null;
+				umaMesh.uv3 = null;
+				umaMesh.uv4 = null;
+				umaMesh.colors32 = null;
+				umaMesh.clothSkinning = null;*/
+
 				combinedMeshList.Clear();
 				combinedMaterialList.Clear();
 				clothProperties = null;
@@ -158,8 +175,10 @@ namespace UMA
 
 				var materials = combinedMaterialList.ToArray();
 				renderers[currentRendererIndex].sharedMaterials = materials;
+
+				umaMesh.ReleaseSharedBuffers();
 			}
-			umaMesh.ReleaseSharedBuffers();
+			//umaMesh.ReleaseSharedBuffers();
 
             umaData.umaRecipe.ClearDNAConverters();
             for (int i = 0; i < umaData.umaRecipe.slotDataList.Length; i++)
@@ -177,6 +196,9 @@ namespace UMA
         protected void BuildCombineInstances()
         {
             SkinnedMeshCombiner.CombineInstance combineInstance;
+
+            //Since BuildCombineInstances is called within a renderer loop, use a variable to keep track of the materialIndex per renderer
+            int rendererMaterialIndex = 0;
 
             for (int materialIndex = 0; materialIndex < umaData.generatedMaterials.materials.Count; materialIndex++)
             {
@@ -197,7 +219,7 @@ namespace UMA
 					{
 						combineInstance.targetSubmeshIndices[i] = -1;
 					}
-					combineInstance.targetSubmeshIndices[slotData.asset.subMeshIndex] = materialIndex;
+					combineInstance.targetSubmeshIndices[slotData.asset.subMeshIndex] = rendererMaterialIndex;//materialIndex;
                     combinedMeshList.Add(combineInstance);
 
 					if (slotData.asset.SlotAtlassed != null)
@@ -210,6 +232,8 @@ namespace UMA
 						clothProperties = slotData.asset.material.clothProperties;
 					}
 				}
+
+                                rendererMaterialIndex++;
             }
         }
 
