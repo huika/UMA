@@ -18,7 +18,8 @@ public partial class UMAWardrobeCollection : UMATextRecipe {
 	public UMAWardrobeCollection()
 	{
 		recipeType = "WardrobeCollection";
-		wardrobeSlot = "FullOutfit";//TODO make this slot mandatory for all races like "None" is
+		//wardrobeSlot = "FullOutfit";//TODO make this slot mandatory for all races like "None" is
+		wardrobeSlot = "WardrobeCollection";
 	}
 
 	#endregion

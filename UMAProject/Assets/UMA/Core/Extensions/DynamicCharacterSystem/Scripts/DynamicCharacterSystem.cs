@@ -317,7 +317,7 @@ namespace UMACharacterSystem
                                 continue;
                             }
                         }
-                        thisWardrobeSlot = "FullOutfit";
+                        thisWardrobeSlot = "WardrobeCollection";
                     }
                     //we might be refreshing so check its not already there
                     if (!RecipeIndex.ContainsKey(u.name))
@@ -330,18 +330,18 @@ namespace UMACharacterSystem
                     {
                         if (u.GetType() == typeof(UMAWardrobeCollection) && (u as UMAWardrobeCollection).wardrobeCollection.sets.Count > 0)
                         {
-                            //if the collection doesn't have a fulloutfit for this race continue
+                            //if the collection doesn't have a wardrobeSet for this race continue
                             //again when its downloading this data isn't there
                             if ((u as UMAWardrobeCollection).wardrobeCollection[u.compatibleRaces[i]].Count == 0)
                             {
                                 if (Recipes.ContainsKey(u.compatibleRaces[i]))
                                 {
-                                    if (Recipes[u.compatibleRaces[i]].ContainsKey("FullOutfit"))
+                                    if (Recipes[u.compatibleRaces[i]].ContainsKey("WardrobeCollection"))
                                     {
-                                        if (Recipes[u.compatibleRaces[i]]["FullOutfit"].Contains(u))
+                                        if (Recipes[u.compatibleRaces[i]]["WardrobeCollection"].Contains(u))
                                         {
                                             Debug.LogWarning("DCS removed " + u.name + " from Recipes");
-                                            Recipes[u.compatibleRaces[i]]["FullOutfit"].Remove(u);
+                                            Recipes[u.compatibleRaces[i]]["WardrobeCollection"].Remove(u);
                                             if (RecipeIndex.ContainsKey(u.name))
                                             {
                                                 Debug.LogWarning("DCS removed " + u.name + " from RecipeIndex");
@@ -358,7 +358,7 @@ namespace UMACharacterSystem
                                     }
                             }
                         }
-                        //When races that are compatible with multiple races are downloaded we may not have all the races actually downloaded
+                        //When recipes that are compatible with multiple races are downloaded we may not have all the races actually downloaded
                         //but that should not stop DCS making an index of recipes that are compatible with that race for when it becomes available
                         if (!Recipes.ContainsKey(u.compatibleRaces[i]))
                         {
